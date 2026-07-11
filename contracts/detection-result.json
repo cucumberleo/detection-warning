@@ -1,0 +1,9 @@
+{
+  "gas_type": "NH3",
+  "concentration_ppm": 26.4,
+  "confidence": 0.89,
+  "response": 0.418,
+  "status": "warning",
+  "algorithm_version": "baseline-v0",
+  "processing_latency_ms": 185
+}

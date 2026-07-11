@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>气体智测平台 · Demo</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <div id="login-screen" class="login-screen">
+      <section class="login-copy">
+        <span class="eyebrow">GAS SENSE · WEB DEMO</span>
+        <h1>气体智测平台</h1>
+        <p>面向光伏自供电气体传感器的双端监测、分析与智能协作基座。</p>
+        <div class="signal-art"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </section>
+      <section class="role-picker">
+        <span class="eyebrow">选择演示身份</span>
+        <h2>进入工作台</h2>
+        <button class="role-card" data-role="user"><b>普通用户</b><small>查看授权设备、个人预警与个性化建议</small><span>进入用户端 →</span></button>
+        <button class="role-card" data-role="admin"><b>管理员</b><small>管理设备、用户、阈值与全局数据</small><span>进入管理端 →</span></button>
+      </section>
+    </div>
+
+    <main id="app" class="app hidden">
+      <aside class="sidebar">
+        <div class="brand"><span class="brand-dot"></span><div>气体智测<small>WEB DEMO</small></div></div>
+        <nav id="nav"></nav>
+        <div class="sidebar-bottom"><div id="identity" class="identity"></div><button id="switch-role" class="ghost">切换身份</button></div>
+      </aside>
+      <section class="workspace">
+        <header><div><p id="page-kicker" class="eyebrow">USER CONSOLE</p><h1 id="page-title">个性化首页</h1></div><div class="header-status"><span class="live-dot"></span>系统运行正常</div></header>
+        <div id="content"></div>
+      </section>
+    </main>
+    <div id="toast" class="toast hidden"></div>
+    <script src="/assets/app.js"></script>
+  </body>
+</html>
