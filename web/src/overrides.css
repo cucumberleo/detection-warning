@@ -1,0 +1,31 @@
+/* Browser-QA fixes kept separate so the visual decisions remain easy to audit. */
+@media (min-width: 801px) {
+  .login-story__copy h1 { font-size: clamp(42px, 4.4vw, 64px); }
+}
+
+.page-enter-active,
+.page-leave-active { transition: none !important; }
+
+@media (max-width: 800px) {
+  .sidebar { display: contents; }
+  .sidebar > .brand,
+  .sidebar > nav { display: none; }
+  .sidebar__bottom {
+    position: fixed;
+    z-index: 45;
+    top: 22px;
+    right: 61px;
+    display: block;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .sidebar__bottom > :not(.icon-button) { display: none; }
+  .sidebar__bottom .icon-button {
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--green-700);
+  }
+}

@@ -1,23 +1,53 @@
-# Gas Monitor Web Demo
+# Gas Sense Web Platform
 
-用户端 + 管理员端的气体传感器平台协作基座。当前版本使用内存中的演示数据，目的是固定页面、接口和协作边界；不要将其作为生产系统。
+面向光伏自供电气体传感器的现代 Web 监测平台。当前版本把原 Flutter/Flask 原型中的核心闭环迁移为 FastAPI + SQLite + Vue 3 + TypeScript，并保留旧 demo 作为迁移对照。
 
-## 启动
+## 已实现
+
+- 普通用户与管理员双工作台；
+- 设备选择、可复现模拟检测和响应曲线；
+- SQLite 检测历史、趋势摘要与 CSV 导出；
+- 后端统一阈值判定、预警创建和人工确认；
+- 管理员设备、用户授权与阈值配置；
+- 角色可见范围、输入校验、错误/空/加载状态；
+- 响应式桌面侧栏与移动端底部导航；
+- 基于当前可见数据的受控助手回答。
+
+## 快速启动
+
+后端：
 
 ```powershell
-cd gas-monitor-web-demo
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r backend\requirements.txt
-python backend\server.py
+python -m pip install -r backend/requirements.txt
+python -m uvicorn backend.app.application:app --host 127.0.0.1 --port 8000
 ```
 
-浏览器访问 `http://127.0.0.1:8000`。
+前端（另开终端）：
 
-## 演示范围
+```powershell
+cd web
+npm install
+npm run dev
+```
 
-- 普通用户：个性化推荐、模拟检测、历史记录、预警确认、AI 助手；
-- 管理员：全局仪表盘、用户、设备、预警阈值与全局检测记录；
-- 后端：稳定的 Demo API，后续替换内存数据为数据库与真实模型。
+访问 `http://127.0.0.1:5173`，接口文档位于 `http://127.0.0.1:8000/docs`。前端兼容 Node.js 18+，不需要全局安装 pnpm。
 
-详细分工、分支与 PR 规则见 [docs/TEAM_WORKFLOW.md](docs/TEAM_WORKFLOW.md)。
+## 验证
+
+```powershell
+python -m pytest backend/tests -q
+cd web
+npm run typecheck
+npm run build
+```
+
+## 目录
+
+- `backend/app/`：FastAPI HTTP adapter、平台模块和 SQLite adapter；
+- `backend/tests/`：公共 HTTP interface 行为测试；
+- `web/`：Vue 3 + TypeScript 前端；
+- `contracts/`：检测结果契约；
+- `docs/REFACTOR_ASSESSMENT.md`：功能、布局、优先级与架构评估；
+- `frontend/`、`backend/server.py`：原始单文件 demo，仅作为迁移对照。
+
+当前曲线与浓度为演示数据，不代表真实安全检测结论。真实信号算法应作为 adapter 接入并继续满足 `contracts/detection-result.v1.json`。
