@@ -27,7 +27,7 @@ const fmt = (value: string) => new Intl.DateTimeFormat('zh-CN', { month: '2-digi
       <MetricCard label="检测记录" :value="overview.total_detections" note="当前可见范围" />
       <MetricCard label="平均浓度" :value="`${overview.average_ppm.toFixed(1)} ppm`" note="基于历史记录" />
       <MetricCard label="待确认预警" :value="overview.open_alert_count" note="需要人工复核" :tone="overview.open_alert_count ? 'warning' : 'good'" />
-      <MetricCard label="在线设备" :value="`${overview.online_devices} / 3`" note="设备连接状态" tone="good" />
+      <MetricCard label="在线设备" :value="`${overview.online_devices} / ${overview.total_devices}`" note="当前授权范围" tone="good" />
     </section>
 
     <section class="content-grid content-grid--wide">
@@ -36,9 +36,8 @@ const fmt = (value: string) => new Intl.DateTimeFormat('zh-CN', { month: '2-digi
         <LineChart :values="overview.trend.map(item => item.value)" :labels="overview.trend.map(item => fmt(item.label))" unit="ppm" />
       </article>
       <article class="panel action-panel">
-        <div class="panel-heading"><div><span class="eyebrow">NEXT BEST ACTION</span><h3>{{ role === 'admin' ? '运行建议' : '为你推荐' }}</h3></div></div>
+        <div class="panel-heading"><div><span class="eyebrow">RULE-BASED GUIDANCE</span><h3>通用处置建议（Demo）</h3></div></div>
         <button v-for="item in recommendations" :key="item.module" class="recommendation" @click="emit('go', item.module as Page)">
-          <span class="recommendation__score">{{ Math.round(item.score * 100) }}</span>
           <span><b>{{ item.title }}</b><small>{{ item.reason }}</small></span><AppIcon name="arrow" :size="16" />
         </button>
       </article>

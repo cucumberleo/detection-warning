@@ -2,23 +2,25 @@
 
 ## 目标
 
-本仓库是后续开发的唯一协作基座。`main` 必须始终可启动；所有新功能通过 Pull Request 进入 `main`。当前 Demo 的内存数据和规则仅用于联调，不可作为最终实验结论。
+本仓库是后续开发的唯一协作基座。`main` 必须始终可启动；所有新功能通过 Pull Request 进入 `main`。当前 Demo 的模拟数据和规则仅用于联调，不可作为最终实验结论。
 
 ## 人员与目录所有权
 
 | 成员 | 职责 | 唯一拥有目录 | 必须交付 |
 |---|---|---|---|
 | 你（算法与 Agent） | 数据标准化、信号处理、训练评估、推理契约、Agent 核心 | `algorithm/`、`agent_core/` | 标准化数据脚本、特征/模型、评估报告、`inference.py`、工具 Schema、Agent 测试集 |
-| 成员 A（后端） | 数据库、认证/权限、检测、预警、统计与工具适配 | `backend/` | FastAPI 迁移、数据库迁移、RBAC、模型调用、受控 Agent 工具、接口测试 |
-| 成员 B（前端） | 用户端、管理员端、图表与交互 | `frontend/` | Vue 迁移、双端页面、图表、表单、接口状态、页面测试 |
+| 成员 A（后端） | 数据库、认证/权限、检测、预警、统计与工具适配 | `backend/` | FastAPI、数据库迁移、RBAC、模型调用、受控 Agent 工具、接口测试 |
+| 成员 B（前端） | 用户端、管理员端、图表与交互 | `web/` | Vue 双端页面、图表、表单、接口状态、页面测试 |
 
-共享目录：`contracts/` 与 `docs/`。修改共享目录前必须在 Issue 或群内说明，并在同一 PR 中更新调用方。
+共享目录：`contracts/` 与 `docs/`。修改共享目录前必须在 Issue 或群内说明，并在同一 PR 中更新调用方。`frontend/` 和 `backend/server.py` 是迁移前 demo，只作对照，不再承载正式功能。
 
 ## 研发接口
 
-检测结果以 [`contracts/detection-result.json`](../contracts/detection-result.json) 为准。后端负责返回它；前端只展示它；算法组负责它的真实生成。
+检测结果以 [`contracts/detection-result.json`](../contracts/detection-result.json) 为唯一版本化契约。后端负责返回它；前端只展示它；算法组负责它的真实生成。
 
 Agent 不直接运行 SQL。算法与 Agent 负责人定义工具 Schema；后端将 Schema 映射到权限受控的查询；前端只显示回答与工具状态。
+
+演示环境也必须在服务端绑定身份和授权范围，不允许依赖客户端传入角色完成隔离。固定 demo token 可以用于本地联调，但不得视为生产认证。
 
 ## 分支与 PR
 
@@ -53,8 +55,8 @@ docs/<short-description>     # 仅文档分支
 
 ## Demo 到正式版的替换顺序
 
-1. 后端：内存数据 → SQLite/PostgreSQL 与真实权限；
-2. 算法：`baseline-v0` → 可复现的真实训练模型；
-3. Agent：规则回退 → LLM + 固定工具调用；
-4. 前端：原生演示页 → Vue 组件化双端页面；
-5. 设备：模拟检测 → 网关上传与实时推送。
+1. 后端：SQLite demo 身份 → PostgreSQL、OIDC/JWT 与真实 RBAC；
+2. 算法：`baseline-web-v1` → 可复现的真实训练模型；
+3. Agent：本地规则回退 → LLM + 固定工具调用；
+4. 前端：Vue demo 页面 → 完整可访问性、E2E 与生产观测；
+5. 设备：模拟检测 → 网关上传与 WebSocket/SSE 实时推送。

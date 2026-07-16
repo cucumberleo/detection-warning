@@ -35,6 +35,7 @@ export interface Overview {
   warning_count: number
   open_alert_count: number
   online_devices: number
+  total_devices: number
   average_ppm: number
   peak_ppm: number
   gas_counts: Record<string, number>
@@ -63,5 +64,5 @@ export interface AlertRule {
   severity: 'low' | 'medium' | 'high'
 }
 
-export interface Recommendation { module: string; title: string; reason: string; score: number }
+export interface Recommendation { module: string; title: string; reason: string }
 export interface SessionUser extends PlatformUser {}

@@ -16,7 +16,7 @@ const session = ref<SessionUser | null>(null)
 const loading = ref(false)
 const error = ref('')
 const toast = ref('')
-const overview = ref<Overview>({ total_detections: 0, warning_count: 0, open_alert_count: 0, online_devices: 0, average_ppm: 0, peak_ppm: 0, gas_counts: {}, trend: [] })
+const overview = ref<Overview>({ total_detections: 0, warning_count: 0, open_alert_count: 0, online_devices: 0, total_devices: 0, average_ppm: 0, peak_ppm: 0, gas_counts: {}, trend: [] })
 const detections = ref<Detection[]>([])
 const alerts = ref<Alert[]>([])
 const devices = ref<Device[]>([])
@@ -26,12 +26,12 @@ const recommendations = ref<Recommendation[]>([])
 const summary = ref('')
 
 const userNav: Array<{ page: Page; label: string }> = [
-  { page: 'dashboard', label: '概览' }, { page: 'monitor', label: '实时监测' },
+  { page: 'dashboard', label: '概览' }, { page: 'monitor', label: '检测控制' },
   { page: 'alerts', label: '预警中心' }, { page: 'analytics', label: '历史分析' },
   { page: 'assistant', label: 'AI 助手' },
 ]
 const adminNav: Array<{ page: Page; label: string }> = [
-  { page: 'dashboard', label: '全局概览' }, { page: 'monitor', label: '监测控制' },
+  { page: 'dashboard', label: '全局概览' }, { page: 'monitor', label: '检测控制' },
   { page: 'alerts', label: '预警管理' }, { page: 'analytics', label: '数据分析' },
   { page: 'resources', label: '用户与设备' }, { page: 'assistant', label: 'AI 助手' },
 ]
@@ -48,15 +48,16 @@ async function loadData(silent = false) {
   if (!silent) loading.value = true
   error.value = ''
   try {
-    const [nextOverview, nextDetections, nextAlerts, nextDevices, nextRules, nextRecommendations, nextSummary] = await Promise.all([
-      api.overview(role.value), api.detections(role.value), api.alerts(role.value), api.devices(),
-      api.rules(), api.recommendations(role.value), api.summary(role.value),
+    const nextRules = role.value === 'admin' ? api.rules() : Promise.resolve({} as Record<GasType, AlertRule>)
+    const [nextOverview, nextDetections, nextAlerts, nextDevices, loadedRules, nextRecommendations, nextSummary] = await Promise.all([
+      api.overview(), api.detections(), api.alerts(), api.devices(), nextRules,
+      api.recommendations(), api.summary(),
     ])
     overview.value = nextOverview
     detections.value = nextDetections
     alerts.value = nextAlerts
     devices.value = nextDevices
-    rules.value = nextRules
+    rules.value = loadedRules
     recommendations.value = nextRecommendations
     summary.value = nextSummary.summary
     users.value = role.value === 'admin' ? await api.users() : []
@@ -77,6 +78,7 @@ async function enter(nextRole: Role) {
     page.value = 'dashboard'
     await loadData()
   } catch (cause) {
+    api.logout()
     role.value = null
     error.value = cause instanceof Error ? cause.message : '登录失败'
     loading.value = false
@@ -84,6 +86,7 @@ async function enter(nextRole: Role) {
 }
 
 function leave() {
+  api.logout()
   role.value = null
   session.value = null
   page.value = 'dashboard'
@@ -115,12 +118,12 @@ function updateRules(nextRules: Record<GasType, AlertRule>) {
   <div v-if="!role" class="login-page">
     <section class="login-story">
       <div class="brand brand--light"><span class="brand-mark"><i></i><i></i><i></i></span><span>气体智测<small>GAS SENSE PLATFORM</small></span></div>
-      <div class="login-story__copy"><span class="eyebrow eyebrow--light">PHOTOVOLTAIC SELF-POWERED SENSOR</span><h1>让每一次微弱响应，<br /><em>都成为清晰的判断。</em></h1><p>将设备、实时曲线、信号处理、历史分析与预警闭环整合在一个现代 Web 工作台中。</p></div>
+      <div class="login-story__copy"><span class="eyebrow eyebrow--light">PHOTOVOLTAIC SELF-POWERED SENSOR</span><h1>让每一次微弱响应，<br /><em>都成为清晰的判断。</em></h1><p>将设备、检测响应曲线、信号处理、历史分析与预警闭环整合在一个现代 Web 工作台中。</p></div>
       <div class="sensor-visual" aria-hidden="true"><div class="sensor-visual__grid"></div><svg viewBox="0 0 800 220"><path d="M0 140 C80 125 120 155 180 135 S280 112 330 128 S420 178 470 105 S565 40 620 90 S715 164 800 62"/><path class="sensor-visual__echo" d="M0 150 C80 135 120 165 180 145 S280 122 330 138 S420 188 470 115 S565 50 620 100 S715 174 800 72"/></svg></div>
       <footer><span>BASELINE-WEB-V1</span><span>FASTAPI · VUE 3 · SQLITE</span></footer>
     </section>
     <section class="login-panel">
-      <div class="login-panel__inner"><span class="eyebrow">SELECT WORKSPACE</span><h2>选择演示身份</h2><p>两种身份共享同一数据源，但拥有不同的可见范围和操作入口。</p>
+      <div class="login-panel__inner"><span class="eyebrow">SELECT WORKSPACE</span><h2>选择演示身份</h2><p>两种身份共享同一数据源，服务端按演示令牌限制可见范围和操作入口。</p>
         <div class="role-list">
           <button class="role-option" :disabled="loading" @click="enter('user')"><span class="role-option__icon"><AppIcon name="monitor" :size="25" /></span><span><b>普通用户</b><small>监测授权设备、处理个人预警与查看趋势</small></span><AppIcon name="arrow" /></button>
           <button class="role-option" :disabled="loading" @click="enter('admin')"><span class="role-option__icon role-option__icon--admin"><AppIcon name="resources" :size="25" /></span><span><b>平台管理员</b><small>管理全局设备、用户权限与预警阈值</small></span><AppIcon name="arrow" /></button>
@@ -148,14 +151,14 @@ function updateRules(nextRules: Record<GasType, AlertRule>) {
           <DashboardView v-if="page === 'dashboard'" :role="role" :overview="overview" :detections="detections" :alerts="alerts" :recommendations="recommendations" @go="page = $event" />
           <MonitorView v-else-if="page === 'monitor'" :devices="devices" @completed="onDetectionCompleted" />
           <AlertsView v-else-if="page === 'alerts'" :role="role" :alerts="alerts" :rules="rules" @acknowledge="acknowledge" @rules-updated="updateRules" />
-          <AnalyticsView v-else-if="page === 'analytics'" :role="role" :detections="detections" :summary="summary" />
+          <AnalyticsView v-else-if="page === 'analytics'" :detections="detections" :summary="summary" />
           <AdminView v-else-if="page === 'resources'" :users="users" :devices="devices" />
           <AssistantView v-else :role="role" />
         </div>
       </Transition>
     </main>
 
-    <nav class="mobile-nav" aria-label="移动端导航"><button v-for="item in navigation.slice(0, 5)" :key="item.page" :class="{ active: page === item.page }" @click="page = item.page"><AppIcon :name="item.page" :size="19" /><span>{{ item.label }}</span></button></nav>
+    <nav class="mobile-nav" aria-label="移动端导航"><button v-for="item in navigation" :key="item.page" :class="{ active: page === item.page }" @click="page = item.page"><AppIcon :name="item.page" :size="19" /><span>{{ item.label }}</span></button></nav>
     <Transition name="toast"><div v-if="toast" class="toast" role="status"><i></i>{{ toast }}</div></Transition>
   </div>
 </template>

@@ -1,9 +1,18 @@
+from dataclasses import dataclass
 from typing import Literal
 
 from pydantic import BaseModel, Field
 
 
+Role = Literal["user", "admin"]
 GasType = Literal["NH3", "Toluene", "HCHO", "TEA"]
+
+
+@dataclass(frozen=True)
+class SessionPrincipal:
+    user_id: str
+    role: Role
+    device_ids: tuple[str, ...]
 
 
 class DetectionRequest(BaseModel):

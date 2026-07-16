@@ -3,7 +3,7 @@ import { nextTick, ref } from 'vue'
 import { api } from '../api'
 import type { Role } from '../types'
 
-const props = defineProps<{ role: Role }>()
+defineProps<{ role: Role }>()
 interface Message { type: 'user' | 'assistant'; text: string; tools?: string[]; range?: string }
 const messages = ref<Message[]>([{ type: 'assistant', text: '你好，我可以基于当前可见数据回答预警、浓度趋势和设备状态问题。' }])
 const input = ref('')
@@ -20,7 +20,7 @@ async function send(message = input.value) {
   await nextTick()
   chat.value?.scrollTo({ top: chat.value.scrollHeight, behavior: 'smooth' })
   try {
-    const response = await api.chat(props.role, text)
+    const response = await api.chat(text)
     messages.value.push({ type: 'assistant', text: response.answer, tools: response.tools, range: response.data_range })
   } catch (cause) {
     messages.value.push({ type: 'assistant', text: cause instanceof Error ? cause.message : '助手暂时不可用' })

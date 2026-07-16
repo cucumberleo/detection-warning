@@ -35,8 +35,8 @@ async function startDetection() {
   <div class="page-stack">
     <section class="monitor-layout">
       <article class="panel monitor-control">
-        <div class="panel-heading"><div><span class="eyebrow">LIVE DETECTION</span><h3>实时监测</h3></div><span class="connection-state"><i></i>{{ selectedDevice?.status === 'online' ? '设备就绪' : '等待连接' }}</span></div>
-        <p class="section-copy">选择设备和气体场景，平台会模拟完整的信号处理、浓度换算、落库与预警判定链路。</p>
+        <div class="panel-heading"><div><span class="eyebrow">DETECTION CONTROL</span><h3>检测控制</h3></div><span class="connection-state"><i></i>{{ selectedDevice?.status === 'online' ? '设备就绪' : '等待连接' }}</span></div>
+        <p class="section-copy">选择授权设备和气体场景，平台会模拟信号处理、浓度换算、落库与预警判定链路。</p>
         <form class="form-stack" @submit.prevent="startDetection">
           <label><span>监测设备</span><select v-model="deviceId"><option v-for="device in devices" :key="device.id" :value="device.id" :disabled="device.status === 'offline'">{{ device.name }} · {{ device.location }}{{ device.status === 'offline' ? '（离线）' : '' }}</option></select></label>
           <div class="form-row"><label><span>目标气体</span><select v-model="gasType"><option>NH3</option><option>Toluene</option><option>HCHO</option><option>TEA</option></select></label><label><span>演示场景</span><select v-model="scenario"><option value="safe">安全浓度</option><option value="warning">超限浓度</option></select></label></div>
@@ -47,7 +47,7 @@ async function startDetection() {
       </article>
 
       <article class="panel live-panel">
-        <div class="panel-heading"><div><span class="eyebrow">SENSOR CURRENT</span><h3>传感器响应曲线</h3></div><span class="panel-value">{{ result ? result.curve.unit : 'nA' }}</span></div>
+        <div class="panel-heading"><div><span class="eyebrow">SENSOR RESPONSE</span><h3>检测响应曲线</h3></div><span class="panel-value">{{ result ? result.curve.unit : 'nA' }}</span></div>
         <div v-if="detecting" class="detecting-state"><div class="scan-line"></div><span>采集与滤波处理中</span></div>
         <LineChart v-else :values="result?.curve.values ?? []" :labels="result ? [String(result.curve.time[0]), String(result.curve.time.at(-1))] : []" unit="nA" :height="260" />
         <div v-if="result" class="result-strip">

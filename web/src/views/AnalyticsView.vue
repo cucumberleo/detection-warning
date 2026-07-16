@@ -3,20 +3,41 @@ import { computed, ref } from 'vue'
 import { api } from '../api'
 import LineChart from '../components/LineChart.vue'
 import StatusBadge from '../components/StatusBadge.vue'
-import type { Detection, GasType, Role } from '../types'
+import type { Detection, GasType } from '../types'
 
-const props = defineProps<{ role: Role; detections: Detection[]; summary: string }>()
+const props = defineProps<{ detections: Detection[]; summary: string }>()
 const filter = ref<'all' | GasType>('all')
+const exporting = ref(false)
+const error = ref('')
 const filtered = computed(() => filter.value === 'all' ? props.detections : props.detections.filter(item => item.gas_type === filter.value))
 const chronological = computed(() => [...filtered.value].reverse())
 const fmt = (value: string) => new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(new Date(value))
+
+async function exportCsv() {
+  exporting.value = true
+  error.value = ''
+  try {
+    const blob = await api.exportCsv()
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'gas-detections.csv'
+    link.click()
+    URL.revokeObjectURL(url)
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : '导出失败'
+  } finally {
+    exporting.value = false
+  }
+}
 </script>
 
 <template>
   <div class="page-stack">
     <section class="analysis-hero">
       <div><span class="eyebrow">INSIGHT SUMMARY</span><h2>历史数据摘要</h2><p>{{ summary || '正在整理历史检测数据…' }}</p></div>
-      <a class="button button--accent" :href="api.exportUrl(role)" download>导出 CSV</a>
+      <button class="button button--accent" :disabled="exporting" @click="exportCsv">{{ exporting ? '导出中…' : '导出 CSV' }}</button>
+      <p v-if="error" class="error-message" role="alert">{{ error }}</p>
     </section>
     <article class="panel">
       <div class="panel-heading panel-heading--wrap"><div><span class="eyebrow">HISTORY TREND</span><h3>浓度变化</h3></div><div class="segmented"><button v-for="item in ['all', 'NH3', 'Toluene', 'HCHO', 'TEA']" :key="item" :class="{ active: filter === item }" @click="filter = item as typeof filter">{{ item === 'all' ? '全部' : item }}</button></div></div>
